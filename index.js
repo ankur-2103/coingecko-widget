@@ -36,6 +36,7 @@ class Widget{
         this.#currencyInfoContainer.className = "currency-info-container";
         this.#currencyValueContainer.className = "currency-value-container";
 
+        this.#generateWidget()
 
         this.#getData()
     }
@@ -73,15 +74,12 @@ class Widget{
         this.#primaryValue = this.#currPrice[fiatCurrency.value].toLocaleString() + " " + fiatCurrency.value.toUpperCase();
         this.#secondaryValue = this.#currPrice[secondaryCurrency.value].toLocaleString() + " " + secondaryCurrency.value.toUpperCase();
         this.#mcapPrice = Intl.NumberFormat('en-US', { notation: "compact", maximumFractionDigits: 1 }).format(this.#currMcapPrice[fiatCurrency.value]).toLocaleString() + " " + fiatCurrency.value.toUpperCase();
-        this.#volume = Intl.NumberFormat('en-US', { notation: "compact", maximumFractionDigits: 1 }).format(this.#volumePrice[volumeCurrency.value]).toLocaleString() + " " + volumeCurrency.value.toUpperCase();
         
         this.#updateMcapVolumeCurrency()
 
-        if (this.#widgetContainer.childNodes.length === 0) {
-            this.#generateWidget()
-        } else {
-            this.#updateWidgate();
-        }
+        this.#volume = Intl.NumberFormat('en-US', { notation: "compact", maximumFractionDigits: 1 }).format(this.#volumePrice[volumeCurrency.value]).toLocaleString() + " " + volumeCurrency.value.toUpperCase();
+        
+        this.#updateWidgate();
     }
 
     #generateCurrencyValueItem(title, value) {
@@ -99,7 +97,7 @@ class Widget{
 
         titleNode.textContent = title
         valueNode.textContent = value
-
+        
         node.appendChild(titleNode)
         node.appendChild(valueNode)
         this.#currencyValueContainer.appendChild(node)
