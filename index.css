@@ -203,8 +203,7 @@ input:checked + .slider:before {
 
 @media only screen and (max-width: 380px) {
     .widget-preview-container{
-        width: 100%;
-        padding: 5px;
+        padding: 0px;
     }
 
     .currency-value-item-title{
