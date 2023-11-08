@@ -211,7 +211,7 @@ input:checked + .slider:before {
     }
 }
 
-@media only screen and (max-width: 320px) {
+@media only screen and (max-width: 330px) {
     .widget-container{
         width: 300px;
     }
