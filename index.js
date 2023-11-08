@@ -21,7 +21,7 @@ class Widget{
     #currMcapPrice
     #volumePrice
     
-    constructor(currency, trickerTrigger, rankTrigger, mcapPriceTrigger, volumeTrigger) {
+    constructor(currency, trickerTrigger, rankTrigger, mcapPriceTrigger, volumeTrigger, fiatCurrency, secondaryCurrency) {
         this.#currCurrency = currency;
         this.#trickerTrigger = trickerTrigger;
         this.#rankTrigger = rankTrigger;
@@ -38,10 +38,10 @@ class Widget{
 
         this.#generateWidget()
 
-        this.#getData()
+        this.#getData(fiatCurrency, secondaryCurrency)
     }
 
-    async #getData() {
+    async #getData(fiatCurrency, secondaryCurrency) {
         const uri = "https://api.coingecko.com/api/v3/coins/"+this.#currCurrency;
         const data = await fetch(uri).then((res) => res.json());
         this.#currPrice = data.market_data.current_price
@@ -75,11 +75,11 @@ class Widget{
         this.#secondaryValue = this.#currPrice[secondaryCurrency.value].toLocaleString() + " " + secondaryCurrency.value.toUpperCase();
         this.#mcapPrice = Intl.NumberFormat('en-US', { notation: "compact", maximumFractionDigits: 1 }).format(this.#currMcapPrice[fiatCurrency.value]).toLocaleString() + " " + fiatCurrency.value.toUpperCase();
         
-        this.#updateMcapVolumeCurrency()
+        this.#updateMcapVolumeCurrency(fiatCurrency, secondaryCurrency)
 
         this.#volume = Intl.NumberFormat('en-US', { notation: "compact", maximumFractionDigits: 1 }).format(this.#volumePrice[volumeCurrency.value]).toLocaleString() + " " + volumeCurrency.value.toUpperCase();
         
-        this.#updateWidgate();
+        this.#updateWidget();
     }
 
     #generateCurrencyValueItem(title, value) {
@@ -120,7 +120,9 @@ class Widget{
         currencyPrimaryValue.id = "currency-primary-value";
         currencySecondaryValue.id = "currency-secondary-value";
         
-        image.src = this.#img;
+        if (this.#img!==undefined) {
+            image.src = this.#img;
+        }
         currencyTitle.textContent = tickerTrigger ? this.#title + " (" + this.#tricker +")" : this.#title;
         currencyPrimaryValue.textContent = this.#primaryValue;
         currencySecondaryValue.textContent = this.#secondaryValue;
@@ -175,6 +177,7 @@ class Widget{
         if (node) {
             node.textContent = this.#mcapPrice
         }
+        console.log(this.#mcapPrice)
     }
     
     #changeVolume() {
@@ -208,7 +211,7 @@ class Widget{
         }
     }
 
-    #updateMcapVolumeCurrency() {
+    #updateMcapVolumeCurrency(fiatCurrency, secondaryCurrency) {
         let option1 = document.createElement("option");
         let option2 = document.createElement("option");
         
@@ -231,7 +234,7 @@ class Widget{
         this.#changeVolume()
     }
     
-    #updateWidgate() { 
+    #updateWidget() { 
         this.#changeImg();
         this.#changeTitle();
         this.#changePrimaryValue();
@@ -239,47 +242,53 @@ class Widget{
         this.#changeRank();
         this.#changeMarketPrice();
         this.#changeVolume();
+
+        this.#widgetContainer.dataset.name = this.#title
+        this.#widgetContainer.dataset.rank = this.#rankTrigger
+        this.#widgetContainer.dataset.marketPrice = this.#mcapPriceTrigger
+        this.#widgetContainer.dataset.volume = this.#volumeTrigger
+        this.#widgetContainer.dataset.ticker = this.#trickerTrigger
     }
 
-    updateCurrCurrency() {
+    updateCurrCurrency(cryptocurrency, fiatCurrency, secondaryCurrency) {
         this.#currCurrency = cryptocurrency.value
-        this.#getData();
+        this.#getData(fiatCurrency, secondaryCurrency);
     }
 
-    tickerToogle() {
+    tickerToogle(tickerTrigger) {
         this.#trickerTrigger = tickerTrigger.checked
         this.#changeTitle();
     }
 
-    rankToogle() {
+    rankToogle(rankTrigger) {
         this.#rankTrigger = rankTrigger.checked
         this.#handleRankToggle();
     }
 
-    marketPriceToogle() {
+    marketPriceToogle(marketCapTrigger) {
         this.#mcapPriceTrigger = marketCapTrigger.checked
         this.#handleMarketPriceToogle()
     }
 
-    volumeToogle() {
+    volumeToogle(volumeTrigger) {
         this.#volumeTrigger = volumeTrigger.checked
         this.#handleVolumeToogle();
     }
 
-    updatePrimaryCurrency() {
+    updatePrimaryCurrency(fiatCurrency, secondaryCurrency, volumeCurrency) {
         this.#primaryValue = this.#currPrice[fiatCurrency.value].toLocaleString() + " " + fiatCurrency.value.toUpperCase();
         this.#changePrimaryValue()
-        this.#updateMcapVolumeCurrency()
-        this.updateMarketPriceVolumeCurrency()
+        this.#updateMcapVolumeCurrency(fiatCurrency,secondaryCurrency)
+        this.updateMarketPriceVolumeCurrency(volumeCurrency)
     }
 
-    updateSecondaryCurrency() { 
+    updateSecondaryCurrency(fiatCurrency, secondaryCurrency) { 
         this.#secondaryValue = this.#currPrice[secondaryCurrency.value].toLocaleString() + " " + secondaryCurrency.value.toUpperCase();
         this.#changeSecondaryValue();
-        this.#updateMcapVolumeCurrency()
+        this.#updateMcapVolumeCurrency(fiatCurrency, secondaryCurrency)
     }
 
-    updateMarketPriceVolumeCurrency() {
+    updateMarketPriceVolumeCurrency(volumeCurrency) {
         this.#mcapPrice = Intl.NumberFormat('en-US', { notation: "compact", maximumFractionDigits: 1 }).format(this.#currMcapPrice[volumeCurrency.value]).toLocaleString() + " " + volumeCurrency.value.toUpperCase();
         this.#volume = Intl.NumberFormat('en-US', { notation: "compact", maximumFractionDigits: 1 }).format(this.#volumePrice[volumeCurrency.value]).toLocaleString() + " " + volumeCurrency.value.toUpperCase();
         this.#changeMarketPrice()
@@ -297,13 +306,13 @@ const marketCapTrigger = document.getElementById("market-cap-trigger");
 const volumeTrigger = document.getElementById("volume-trigger");
 const widgetPreviewContainer = document.getElementById("widget-preview-container");
 
-const widget = new Widget(cryptocurrency.value, tickerTrigger.checked, rankTrigger.checked, marketCapTrigger.checked, volumeTrigger.checked);
+const widget = new Widget(cryptocurrency.value, tickerTrigger.checked, rankTrigger.checked, marketCapTrigger.checked, volumeTrigger.checked, fiatCurrency, secondaryCurrency);
 
-cryptocurrency.addEventListener("change", ()=>{widget.updateCurrCurrency()})
-fiatCurrency.addEventListener("change", (e)=>{widget.updatePrimaryCurrency()})
-secondaryCurrency.addEventListener("change", (e)=>{widget.updateSecondaryCurrency()})
-volumeCurrency.addEventListener("change", (e)=>{widget.updateMarketPriceVolumeCurrency()})
-tickerTrigger.addEventListener("change", ()=>{widget.tickerToogle()})
-rankTrigger.addEventListener("change", (e)=>{widget.rankToogle()})
-marketCapTrigger.addEventListener("change", (e)=>{widget.marketPriceToogle()})
-volumeTrigger.addEventListener("change", (e)=>{widget.volumeToogle()})
+cryptocurrency.addEventListener("change", ()=>{widget.updateCurrCurrency(cryptocurrency, fiatCurrency, secondaryCurrency)})
+fiatCurrency.addEventListener("change", ()=>{widget.updatePrimaryCurrency(fiatCurrency, secondaryCurrency, volumeCurrency)})
+secondaryCurrency.addEventListener("change", (e)=>{widget.updateSecondaryCurrency(fiatCurrency, secondaryCurrency)})
+volumeCurrency.addEventListener("change", (e)=>{widget.updateMarketPriceVolumeCurrency(volumeCurrency)})
+tickerTrigger.addEventListener("change", ()=>{widget.tickerToogle(tickerTrigger)})
+rankTrigger.addEventListener("change", (e)=>{widget.rankToogle(rankTrigger)})
+marketCapTrigger.addEventListener("change", (e)=>{widget.marketPriceToogle(marketCapTrigger)})
+volumeTrigger.addEventListener("change", (e)=>{widget.volumeToogle(volumeTrigger)})
