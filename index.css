@@ -201,9 +201,13 @@ input:checked + .slider:before {
     
 }
 
-@media only screen and (max-width: 380px) {
+@media only screen and (max-width: 500px) {
     .widget-preview-container{
         padding: 0px;
+    }
+    
+    .widget-container{
+        width: 320px;
     }
 
     .currency-value-item-title{
@@ -211,8 +215,8 @@ input:checked + .slider:before {
     }
 }
 
-@media only screen and (max-width: 330px) {
+@media only screen and (max-width: 380) {
     .widget-container{
-        width: 290px;
+        width: 280px;
     }
 }
